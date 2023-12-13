@@ -4,6 +4,9 @@
 const board = document.getElementById('board')
 const title = document.getElementById('title')
 const play = document.getElementById('start')
+const info = document.getElementById('info')
+const score = document.getElementById('score')
+
 
 
 
@@ -12,22 +15,25 @@ const width = 20
 const height = 20
 const cellCount = width * height
 let alienInterval
-let shootinInterval
+let shootingInterval
 let direction1 = "right"
 let direction2 = "right"
 let direction3 = "right"
+
 let playerScore = 0
 
 
 let cells = [] //to be able to keep track of positions
 const shipStartingPosition = 370
 let shipCurrentPosition = shipStartingPosition
-const aliens1StartingPosition = [24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35]
+const aliens1StartingPosition= [24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35]
 let aliens1CurrentPosition = aliens1StartingPosition
-const aliens2StartingPosition = [44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75]
+const aliens2StartingPosition  = [44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75]
 let aliens2CurrentPosition = aliens2StartingPosition
 const aliens3StartingPosition = [84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115]
 let aliens3CurrentPosition = aliens3StartingPosition
+const wall1 = [322, 323, 324, 327, 328, 329, 332, 333, 334, 336, 337]
+let wallLife = wall1
 
 // * add/remove Classes Fucntions //
 function addClass (position, name) {
@@ -40,20 +46,22 @@ function removeClass (position, name) {
 
 
 // * Main Functions
-init()
+// init()
 
 document.addEventListener('keydown', handleShipMovement)
-document.addEventListener('keyup', shooting)
+// document.addEventListener('keyup', shooting)
 play.addEventListener('click', init)
+// playAgainBtn.addEventListener('click', init)
 
 
 function init() {
-// title.remove()
-// play.remove()
+title.remove()
+play.remove()
+info.remove()
+board.style.flexDirection = 'row'
 createGrid()
 startingPositions()
 handleAliensMovement()
-
 
 }
 
@@ -63,19 +71,19 @@ function createGrid() {
     //create grid cells
     for (let i = 0; i < cellCount; i++) {
         const cell = document.createElement('div') //creating the cell divs
-        // cell.innerText = i // text for guidance
-        cell.dataset.index = i // text for guidance
+        cell.innerText = i // text for guidance
+        cell.setAttribute('id', i) // text for guidance
         board.appendChild(cell) // appending the cells to the board
         cells.push(cell) // adding each cell to the cells array
     }
+
+    score.innerText = `Score: ${playerScore}`
+
 }
 
 function startingPositions() {
     // adding ship to starting position
-
     addClass(shipStartingPosition, 'ship')
-        
-    
 
     // adding aliens to starting position
     aliens1StartingPosition.forEach((position) => {
@@ -88,6 +96,10 @@ function startingPositions() {
 
     aliens3StartingPosition.forEach((position) => {
         addClass(position, 'alien3')
+    })
+
+    wall1.forEach((position) => {
+        addClass(position, 'wall')
     })
 }
 
@@ -108,7 +120,9 @@ function handleShipMovement(event) {
 
     } else if (key === left && shipCurrentPosition % width !== 0) {
         shipCurrentPosition -= 1
-    } 
+    } else if (key === ' ') {
+        shooting()
+    }
 
     addClass(shipCurrentPosition, 'ship')
     
@@ -116,17 +130,17 @@ function handleShipMovement(event) {
 }
 
 function handleAliensMovement() {
-    let alienCount = aliens1CurrentPosition.length + aliens2CurrentPosition.length + aliens3CurrentPosition
+    let alienCount = aliens1CurrentPosition.length + aliens2CurrentPosition.length + aliens3CurrentPosition.length
+    let myInterval = 400
+    let alienInterval
 
-    alienInterval = setInterval(alien1Timer, 1000)
+    alienInterval = setInterval(alien1Timer, myInterval)
 
-    // if (alienCount > (alienCount/2)) {
-    //     alienInterval = setInterval(alien1Timer, 1000)
-    // } else if (alienCount) {
-
-    // }
 
     function alien1Timer() {
+
+
+    
     const lastAlien1Pos = aliens1CurrentPosition[aliens1CurrentPosition.length - 1]
     const firstAlien1Pos = aliens1CurrentPosition[0]
     let newPositions1 = []
@@ -228,50 +242,90 @@ function handleAliensMovement() {
     aliens2CurrentPosition.forEach(position => addClass(position, 'alien2'));
     aliens3CurrentPosition.forEach(position => addClass(position, 'alien3'));
     
-    }   
+    if (lastAlien3Pos > 359 || lastAlien2Pos > 359 || lastAlien1Pos > 359) {
+        clearInterval(alienInterval)
+        endGame()
+    }
+
+    }
 
 
     }
 
 
 
-function shooting(event) {
-
-    const key = event.key
-    const spacebar = " "
+function shooting(evt) {
 
     let shootingPosition = shipCurrentPosition - 20
 
-    if (key === spacebar) {
-        addClass(shootingPosition, 'shoot')
-    }
+    addClass(shootingPosition, 'shoot')
 
-    shootingInterval = setInterval(shootingTimer, 250)
+    const shootingInterval = setInterval(shootingTimer, 250)
 
     function shootingTimer () {
         removeClass(shootingPosition, 'shoot')
-        shootingPosition -= 20
+        shootingPosition -= 20 
         addClass(shootingPosition, 'shoot')
 
-        let arr = []
+        const topLine = Math.floor(shootingPosition / width) 
 
-        aliens1CurrentPosition.map(position => { 
-            arr.push(position)
-        })
+        if (topLine === 0) {
+            removeClass(shootingPosition, 'shoot')
+            clearInterval(shootingInterval)
 
-
-        if(arr.includes(shootingPosition)) {
-            console.log(shootingPosition);
-            arr.splice(shootingPosition, 1)
+        }  else if (cells[shootingPosition].classList.contains('alien1')) {
+            const alienIndex = aliens1CurrentPosition.indexOf(shootingPosition)
+            aliens1CurrentPosition.splice(alienIndex, 1)
+        
             removeClass(shootingPosition, 'alien1')
-
+            removeClass(shootingPosition, 'shoot')
+            playerScore += 30
+            clearInterval(shootingInterval)
+            return playerScore
+        } else if (cells[shootingPosition].classList.contains('alien2')) {
+            const alienIndex = aliens2CurrentPosition.indexOf(shootingPosition)
+            aliens2CurrentPosition.splice(alienIndex, 1)
+        
+            removeClass(shootingPosition, 'alien2')
+            removeClass(shootingPosition, 'shoot')
+            playerScore += 20
+            clearInterval(shootingInterval)
+            return playerScore
+        } else if (cells[shootingPosition].classList.contains('alien3')) {
+            const alienIndex = aliens3CurrentPosition.indexOf(shootingPosition)
+            aliens3CurrentPosition.splice(alienIndex, 1)
+        
+            removeClass(shootingPosition, 'alien3')
+            removeClass(shootingPosition, 'shoot')
+            playerScore +=10
+            clearInterval(shootingInterval)
+            return playerScore
+        } else if (cells[shootingPosition].classList.contains('wall')) {
+            const wall1Index = wall1.indexOf(shootingPosition)
+            wall1.splice(wall1Index, 1)
+        
+            removeClass(shootingPosition, 'wall')
+            removeClass(shootingPosition, 'shoot')
             
-        } else if (shootingPosition < 19 && shootingPosition > 0) {
-            clearInterval(shootinInterval)
+            clearInterval(shootingInterval)
+            return playerScore
         }
-
-    }
 
 }
 
+}
 
+function endGame () {
+    cells.map((cell) => {
+        cell.remove()
+    })
+    let endScreen = document.createElement('h1')
+    endScreen.innerText = 'You Lose'
+    endScreen.classList.add('endgame')
+    let playAgainBtn = document.createElement('button')
+    playAgainBtn.innerText = 'Play Again?'
+    endScreen.classList.add('playagain')
+    board.appendChild(endScreen)
+    board.appendChild(playAgainBtn)
+    board.style.flexDirection = 'column'
+}
