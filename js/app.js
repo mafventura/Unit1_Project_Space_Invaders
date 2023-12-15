@@ -91,6 +91,7 @@ function init() {
     handleAliensMovement()
     handleLasers()
 }
+
 function createGrid() {
     // grid info
 
@@ -367,7 +368,14 @@ function handleLasers() {
 }
 
 function alienLaser(pos) {
-    
+    let alienCount = aliens1CurrentPosition.length + aliens2CurrentPosition.length + aliens3CurrentPosition.length
+
+    const lastAlien1Pos = aliens1CurrentPosition[aliens1CurrentPosition.length - 1]
+
+    const lastAlien2Pos = aliens2CurrentPosition[aliens2CurrentPosition.length - 1]
+
+    const lastAlien3Pos = aliens3CurrentPosition[aliens3CurrentPosition.length - 1]
+
     const laserInterval = setInterval(() => {
         laserPos = cells[pos]
 
@@ -392,9 +400,8 @@ function alienLaser(pos) {
             removeClass(pos, 'laser')
             lives -= 1
             live1.remove()
-        } else if (laserPos && laserPos.classList.contains('ship') && lives === 0) {
+        } else if (lives === 0) {
             clearInterval(laserInterval)
-            crashSound.play()
             removeClass(pos, 'ship')
             removeClass(pos, 'laser')
         } else if (laserPos && laserPos.classList.contains('wall')) {
@@ -405,6 +412,12 @@ function alienLaser(pos) {
             removeClass(pos, 'wall')
             removeClass(pos, 'laser')
         } else if (pos > 381) {
+            clearInterval(laserInterval)
+            removeClass(pos, 'laser')
+        } else if (alienCount <= 0) {
+            clearInterval(laserInterval)
+            removeClass(pos, 'laser')
+        } else if (lastAlien3Pos > 359 || lastAlien2Pos > 359 || lastAlien1Pos > 359) {
             clearInterval(laserInterval)
             removeClass(pos, 'laser')
         } else {
