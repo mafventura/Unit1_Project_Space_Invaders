@@ -86,6 +86,7 @@ function init() {
     direction1 = "right"
     direction2 = "right"
     direction3 = "right"
+    randNumm = Math.floor(Math.random() * 6)
     createGrid()
     startingPositions()
     handleAliensMovement()
@@ -359,7 +360,15 @@ function handleLasers() {
     randomIndex = Math.floor(Math.random() * 6)
     laserPos = aliens3CurrentPosition[randomIndex]
     setInterval(() => {
-        laserPos = aliens3CurrentPosition[randNumm] + 20
+        if (aliens3CurrentPosition.length !== 0) {
+            laserPos = aliens3CurrentPosition[randomIndex] + 20
+        } else if (aliens3CurrentPosition.length === 0 && aliens2CurrentPosition.length !== 0) {
+            laserPos = aliens2CurrentPosition[randomIndex] + 20
+        } else if (aliens2CurrentPosition.length === 0 && aliens1CurrentPosition.length !== 0) {
+            laserPos = aliens2CurrentPosition[randomIndex] + 20
+        }
+
+
         if (alienCount > 1) {
             alienLaser(laserPos)
         }
