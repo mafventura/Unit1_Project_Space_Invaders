@@ -67,9 +67,6 @@ function init() {
     title.remove()
     play.remove()
     info.remove()
-    clearInterval(laserInterval)
-    clearInterval(alienInterval)
-    clearInterval(shootingInterval)
     board.innerHTML = ''
     board.style.flexDirection = 'row'
     cells = []
@@ -86,12 +83,14 @@ function init() {
     playerScore = 0
     shootingPosition = 0
     laserPos = 0
+    direction1 = "right"
+    direction2 = "right"
+    direction3 = "right"
     createGrid()
     startingPositions()
     handleAliensMovement()
     handleLasers()
 }
-
 function createGrid() {
     // grid info
 
